@@ -25,9 +25,27 @@ const envPaths = [
   path.resolve(__dirname, '.env.local'),
 ];
 
-// Preserve critical env vars set by the shell/infra before dotenv runs
+// Preserve critical env vars set by the shell/infra (Railway Dashboard) before dotenv runs
 const shellNodeEnv = process.env.NODE_ENV;
 const shellPort = process.env.PORT;
+const preservedKeys: Record<string, string | undefined> = {};
+const aiKeyNames = [
+  'GROQ_API_KEY',
+  'GEMINI_API_KEY',
+  'GOOGLE_AI_API_KEY',
+  'OPENAI_API_KEY',
+  'TOGETHER_API_KEY',
+  'ANTHROPIC_API_KEY',
+  'OPENROUTER_API_KEY',
+  'MISTRAL_API_KEY',
+];
+
+for (const key of aiKeyNames) {
+  const val = process.env[key];
+  if (val && !/your[-_ ]?|placeholder|key[-_ ]?here|changeme|replace[-_ ]?me|example/i.test(val)) {
+    preservedKeys[key] = val;
+  }
+}
 
 const fallbackOverride = shellNodeEnv !== 'production';
 for (const envPath of envPaths) {
@@ -39,7 +57,12 @@ for (const envPath of envPaths) {
   }
 }
 
-// Restore shell-set values — dotenv must never overwrite infra/CLI env vars
+// Restore shell-set values — dotenv must never overwrite infra/CLI env vars (Railway)
+for (const [key, val] of Object.entries(preservedKeys)) {
+  if (val) {
+    process.env[key] = val;
+  }
+}
 if (shellNodeEnv) process.env.NODE_ENV = shellNodeEnv;
 if (shellPort) process.env.PORT = shellPort;
 
