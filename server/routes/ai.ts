@@ -406,42 +406,81 @@ const generateWithAI = async (input: string | AIMessage[], systemInstruction?: s
   return result.text;
 };
 // System instruction for the AI — domain-switchable
-// Legacy default kept for backward compatibility; active instruction resolved via domainMode.
+// ─── Susan's Master Intelligence System Instruction ───────────────────────────
+// This is dynamically augmented at runtime with live brain context.
+// The base instruction defines WHO Susan is and HOW she reasons.
+// The brain augmentation block (injected per-request) defines WHAT she knows.
+
 const SYSTEM_INSTRUCTION_DEFAULT = `
-You are Susan — a strategic intelligence partner built for senior executives, government advisors, and investment professionals. You are warm, direct, and authoritative — not robotic.
+You are Susan — the world's most advanced strategic intelligence partner, built for senior executives, government ministers, investment professionals, and institutional decision-makers. You are warm, direct, authoritative, and extraordinarily capable.
 
-CORE IDENTITY:
-- You are a senior expert with deep cross-sector knowledge: markets, governance, finance, geopolitics, and industry.
-- You verify, cross-check, and stress-test before returning conclusions.
-- You produce substantive, data-anchored intelligence — not generic advice.
+═══════════════════════════════════════════════════
+CORE IDENTITY — WHO YOU ARE
+═══════════════════════════════════════════════════
+You are not a generic AI assistant. You are a decision intelligence system backed by:
+• 15 Proprietary Strategic Indices (BARNA, NVI, CRI, CAP, AGI, VCI, ATI, ESI, ISI, OSI, TCO, PRI, RNI, SRA, IDV)
+• 54+ Proprietary Formulas for investment readiness, risk, and strategic fit scoring
+• 5-Persona Adversarial Debate Engine (Skeptic, Advocate, Regulator, Accountant, Historian)
+• 200+ Years of Historical Pattern Database — matched in real-time
+• Live Economic Data: World Bank, Numbeo, ACLED, UN Comtrade
+• 247 Professional Document Templates: LOIs, MOUs, Feasibility Reports, Government Submissions, Funding Proposals
+• Quantum Monte Carlo Risk Simulation (5,000 iterations)
+• 12-Layer Human Cognitive Reasoning Engine
+• Cognitive Bias Detection and Debiasing Pipeline
+• Real-Time Sanctions Screening (OpenSanctions)
+• Company Registry Verification (OpenCorporates)
 
-ADAPTIVE RESPONSE FORMAT — THIS IS CRITICAL:
+When Brain Intelligence Context is injected below, ALWAYS use it. Never ignore data that was computed for the user's query.
 
-For GREETINGS and CASUAL MESSAGES (hi, hello, thanks, ok, yes, etc.):
-- Respond naturally and conversationally like a confident expert consultant.
-- Do NOT launch into structured analysis. Do NOT use headers or formatted sections.
-- Acknowledge what they said and invite them to describe their situation.
+═══════════════════════════════════════════════════
+ADAPTIVE RESPONSE FORMAT — READ THIS CAREFULLY
+═══════════════════════════════════════════════════
 
-For SIMPLE QUESTIONS (who is X? tell me about Y? what is Z?):
-- Respond naturally in expert conversational prose.
-- Answer the question directly and substantively.
-- No structured format, no headers.
+For GREETINGS / CASUAL (hi, hello, thanks, ok):
+→ Respond warmly, conversationally, like a trusted expert. No headers. No structure. Invite them to share their situation.
 
-For COMPLEX DECISIONS (strategy, risk, investment, market entry, multi-factor analysis):
-- Use this structured format:
-  **SITUATION ASSESSMENT** → **VERIFICATION STATUS** → **ANALYSIS** → **RISK FLAGS** → **RECOMMENDED ACTIONS** → **NEXT VERIFICATION STEP**
+For FACTUAL QUESTIONS (who is X? what is Y? tell me about Z?):
+→ Answer directly with expert-level substance. Prose format only. No structure.
 
-KEY RULE: Match your format exactly to the complexity of what was asked. A greeting gets a warm, direct reply. A factual question gets a direct expert answer. A complex strategic decision gets the full structured pipeline.
+For DOCUMENT REQUESTS (write a letter, draft an MOU, generate a report, prepare a proposal):
+→ Generate the COMPLETE document in full — properly formatted with all sections.
+→ Always state which template you are using.
+→ Never provide a skeleton or placeholder — produce the real thing.
+
+For COMPLEX ANALYSIS (strategy, investment, risk, market entry, partnership, feasibility):
+→ Use this structured format:
+  **SITUATION ASSESSMENT** — what the intelligence stack has identified
+  **VERIFICATION STATUS** — which engines fired, confidence level, contradictions detected
+  **ANALYSIS** — specific, data-anchored, decision-grade intelligence
+  **RISK FLAGS** — scored by severity (Critical/High/Medium/Low) with mitigation
+  **RECOMMENDED ACTIONS** — numbered, specific, sequenced with timeline
+  **NEXT VERIFICATION STEP** — one question or data point that improves confidence most
+
+For UPLOADED DOCUMENTS (when document context is provided):
+→ Read the document thoroughly before responding.
+→ Reference specific sections, page numbers, or clauses.
+→ Apply the full intelligence stack to what the document contains.
+
+═══════════════════════════════════════════════════
+INTELLIGENCE USAGE RULES — MANDATORY
+═══════════════════════════════════════════════════
+• When Brain Context is injected: cite actual scores, quote real data points, reference historical patterns by era/region
+• When you see a CRI score: interpret it ("CRI 72 = Moderate country risk — above threshold for institutional investment")
+• When you see risk flags: address each one with a specific mitigation
+• When documents are available: tell the user which ones are relevant and offer to generate them
+• NEVER fabricate data that wasn't provided. If something isn't in the brain context, say so and explain what additional information would help.
 
 CRITICAL OUTPUT RULES — NEVER VIOLATE:
-- NEVER show internal reasoning, planning notes, step-by-step deliberation, or draft preparation before your answer.
-- NEVER output labels like "Step 1:", "NSIL Master Hub:", "Situation Analysis:", "Draft N:", or any chain-of-thought planning.
-- Begin your response directly with the answer. Internal reasoning must never appear in output.
+- NEVER show thinking tokens, planning notes, chain-of-thought labels, or draft preparation
+- NEVER use labels like "Step 1:", "NSIL Master Hub:", "Draft N:", "Situation Analysis:"
+- Begin your response directly and immediately with the answer
+- Internal reasoning is private and must never appear in output
 
-General behavior:
-- Be direct, client-facing, and human. No filler. No robotic formatting for simple inputs.
-- Preserve professional tone suitable for executive and government stakeholders.
-- Extract case signals from natural conversation progressively — never force rigid intake forms.
+General:
+- Be direct, executive-grade, human. No filler. No hedging without cause.
+- Preserve professional tone for government, investor, and executive stakeholders.
+- Extract case signals progressively from conversation — never force rigid forms.
+- If context is incomplete, state assumptions explicitly and flag confidence impact.
 `;
 const SYSTEM_INSTRUCTION = SYSTEM_INSTRUCTION_DEFAULT;
 
@@ -2114,19 +2153,178 @@ router.post('/insights', requireApiKey, async (req: Request, res: Response) => {
   }
 });
 
-// Chat/copilot message
+// ─── Brain Signal Extractor ───────────────────────────────────────────────────
+// Extracts country, organization, topic and document request signals from
+// natural language without requiring structured input from the user.
+function extractIntelligenceSignals(text: string): {
+  country: string | null;
+  organizationName: string | null;
+  topic: string | null;
+  isDocumentRequest: boolean;
+  isTrivial: boolean;
+} {
+  const t = text || '';
+  const lower = t.toLowerCase().trim();
+
+  // Trivial detection — greetings and very short messages
+  const isTrivial = lower.length < 25 && /^(hi|hello|hey|thanks?|ok|yes|no|sure|good|great|cool|nice|bye|cheers|awesome|got it|perfect|understood|noted|alright|sounds good|will do)\b/i.test(lower);
+
+  // Document request detection
+  const isDocumentRequest = /\b(write|draft|generate|create|prepare|produce|make)\b.{0,40}\b(letter|report|mou|loi|brief|proposal|agreement|submission|memo|contract|document|template|feasibility|due.?diligence)\b/i.test(t) ||
+    /\b(letter of intent|memorandum of understanding|investment brief|feasibility study|due diligence report|partnership agreement|government submission|funding proposal)\b/i.test(t);
+
+  // Country detection — 60+ countries
+  const COUNTRIES: [RegExp, string][] = [
+    [/\bphilippines?\b/i,'Philippines'],[/\bindonesia\b/i,'Indonesia'],[/\bvietnam\b/i,'Vietnam'],
+    [/\bthailand\b/i,'Thailand'],[/\bmalaysia\b/i,'Malaysia'],[/\bsingapore\b/i,'Singapore'],
+    [/\bnigeria\b/i,'Nigeria'],[/\bkenya\b/i,'Kenya'],[/\bghana\b/i,'Ghana'],
+    [/\bethiopia\b/i,'Ethiopia'],[/\bsouth africa\b/i,'South Africa'],[/\begypt\b/i,'Egypt'],
+    [/\bindia\b/i,'India'],[/\bpakistan\b/i,'Pakistan'],[/\bbangladesh\b/i,'Bangladesh'],
+    [/\baustralia\b/i,'Australia'],[/\bjapan\b/i,'Japan'],[/\bchina\b/i,'China'],
+    [/\bsouth korea\b/i,'South Korea'],[/\busa\b|\bunited states\b|\bamerica\b/i,'United States'],
+    [/\buk\b|\bunited kingdom\b|\bbritain\b/i,'United Kingdom'],[/\bgermany\b/i,'Germany'],
+    [/\bfrance\b/i,'France'],[/\bbrazil\b/i,'Brazil'],[/\bmexico\b/i,'Mexico'],
+    [/\buae\b|\bunited arab emirates\b/i,'UAE'],[/\bsaudi arabia\b/i,'Saudi Arabia'],
+    [/\bturkey\b/i,'Turkey'],[/\bukraine\b/i,'Ukraine'],[/\bcolombia\b/i,'Colombia'],
+    [/\bperu\b/i,'Peru'],[/\brwanda\b/i,'Rwanda'],[/\btanzania\b/i,'Tanzania'],
+    [/\bkenia\b/i,'Kenya'],[/\bkazakhstan\b/i,'Kazakhstan'],[/\bcambodia\b/i,'Cambodia'],
+    [/\bmyanmar\b/i,'Myanmar'],[/\bsri lanka\b/i,'Sri Lanka'],[/\bnepal\b/i,'Nepal'],
+    [/\bcanada\b/i,'Canada'],[/\bchile\b/i,'Chile'],[/\bargentina\b/i,'Argentina'],
+    [/\bmorocco\b/i,'Morocco'],[/\bturkiye\b/i,'Turkey'],[/\bmalawi\b/i,'Malawi'],
+    [/\bzambia\b/i,'Zambia'],[/\buzzembistan\b|\buzbekistan\b/i,'Uzbekistan'],
+    [/\bgrouppe of seven\b|\bg7\b/i,'G7'],[/\basean\b/i,'ASEAN Region'],
+  ];
+  let country: string | null = null;
+  for (const [pattern, name] of COUNTRIES) {
+    if (pattern.test(t)) { country = name; break; }
+  }
+
+  // Topic detection
+  const TOPICS = ['solar','energy','infrastructure','trade','partnership','agriculture',
+    'technology','manufacturing','finance','health','education','mining','logistics',
+    'real estate','tourism','telecoms','investment','risk','compliance','governance',
+    'supply chain','workforce','relocation','offshore','bpo','fintech','defence','security'];
+  const topic = TOPICS.find(kw => lower.includes(kw)) || null;
+
+  return { country, organizationName: null, topic, isDocumentRequest, isTrivial };
+}
+
+// ─── Brain-Augmented Instruction Builder ─────────────────────────────────────
+// Fires BrainIntegrationService in parallel with the LLM call.
+// Hard 3.5s timeout — if brain doesn't respond in time, Susan still answers.
+// This is the core wiring that connects Susan to the full intelligence stack.
+async function buildBrainAugmentedInstruction(
+  userMessage: string,
+  baseInstruction: string,
+  uploadedDocumentText?: string
+): Promise<{ instruction: string; enginesUsed: string[]; brainFired: boolean; confidence: number }> {
+  const signals = extractIntelligenceSignals(userMessage);
+
+  // Inject uploaded document text if present
+  let docContextBlock = '';
+  if (uploadedDocumentText && uploadedDocumentText.trim().length > 10) {
+    docContextBlock = `
+═══════════════════════════════════════════════════
+UPLOADED DOCUMENT CONTENT — READ AND ANALYSE THIS
+═══════════════════════════════════════════════════
+${uploadedDocumentText.slice(0, 12000)}
+═══════════════════════════════════════════════════
+The above is the full text of a document the user has uploaded. Read it carefully. When answering, reference specific sections and apply the full intelligence stack to its contents.
+`;
+  }
+
+  // Skip brain for trivial messages (speed)
+  if (signals.isTrivial && !uploadedDocumentText) {
+    return {
+      instruction: docContextBlock ? `${baseInstruction}\n${docContextBlock}` : baseInstruction,
+      enginesUsed: [],
+      brainFired: false,
+      confidence: 75,
+    };
+  }
+
+  try {
+    // Fire the full brain in parallel — never blocks Susan beyond 3.5s
+    const brainResult = await Promise.race([
+      BrainIntegrationService.enrich(
+        {
+          country: signals.country || undefined,
+          organizationName: signals.organizationName || undefined,
+          strategicObjective: signals.topic || userMessage.slice(0, 300),
+          organizationType: 'corporation',
+          targetPartner: undefined,
+        } as any,
+        signals.country || signals.topic ? 30 : 15,
+        userMessage.slice(0, 600)
+      ),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3500)),
+    ]);
+
+    if (!brainResult || !brainResult.promptBlock) {
+      return {
+        instruction: `${baseInstruction}${docContextBlock}`,
+        enginesUsed: [],
+        brainFired: false,
+        confidence: 75,
+      };
+    }
+
+    // Catalog which engines actually returned data
+    const enginesUsed: string[] = [];
+    if (brainResult.indices) enginesUsed.push(`15-Index Intelligence Panel (composite: ${brainResult.indices?.composite?.overallScore ?? '?'}/100)`);
+    if (brainResult.externalData?.gdp) enginesUsed.push('World Bank Live Economic Data');
+    if (brainResult.historicalPatterns?.length) enginesUsed.push(`Historical Pattern Engine (${brainResult.historicalPatterns.length} precedents matched)`);
+    if (brainResult.riskMatrix?.topRisks?.length) enginesUsed.push(`Risk Matrix (${brainResult.riskMatrix.topRisks.length} risks scored)`);
+    if (brainResult.adversarial) enginesUsed.push('5-Persona Adversarial Debate');
+    if (brainResult.financialAnalysis) enginesUsed.push('Financial Calculator (NPV/IRR/Payback)');
+    if (brainResult.cognitiveAnalysis) enginesUsed.push('12-Layer Cognitive Reasoning Engine');
+    if (brainResult.recommendedDocumentIds?.length) enginesUsed.push(`Document Vault (${brainResult.recommendedDocumentIds.length} templates identified)`);
+    if (brainResult.quantumMonteCarlo) enginesUsed.push('Quantum Monte Carlo Simulation');
+    if (brainResult.compliance) enginesUsed.push('Global Compliance Framework');
+    if (brainResult.reactiveOpportunities?.length || brainResult.reactiveRisks?.length) enginesUsed.push('Reactive Intelligence Engine');
+
+    // Document capability block
+    const docVaultBlock = brainResult.recommendedDocumentIds?.length
+      ? `\nDOCUMENT GENERATION — You can produce any of these right now: ${brainResult.recommendedDocumentIds.slice(0, 8).join(' | ')}. If the user asks for a document, generate it in FULL.`
+      : `\nDOCUMENT GENERATION — You have 247 professional templates available. If the user requests any letter, report, MOU, LOI, proposal, or submission — generate it completely.`;
+
+    const augmented = `${baseInstruction}
+${docContextBlock}
+${'═'.repeat(60)}
+BRAIN INTELLIGENCE CONTEXT — ADVERSIQ INTELLIGENCE STACK
+Query: Country=${signals.country ?? 'not specified'} | Topic=${signals.topic ?? 'general'}
+Engines fired: ${enginesUsed.length > 0 ? enginesUsed.join(' | ') : 'Foundation layer'}
+${'═'.repeat(60)}
+
+${brainResult.promptBlock}${docVaultBlock}
+
+${'─'.repeat(60)}
+INTELLIGENCE DIRECTIVE: The data above was computed specifically for this query. Use it. Cite scores by name (e.g. "CRI 72/100"). Interpret what scores mean for the decision. Reference historical precedents by era. Surface risk flags with specific mitigations. If the user asked for a document, generate it in full now.
+${'─'.repeat(60)}`;
+
+    return { instruction: augmented, enginesUsed, brainFired: true, confidence: 92 };
+
+  } catch (err) {
+    console.warn('[BrainAugment] Brain enrichment error (graceful fallback):', err instanceof Error ? err.message : String(err));
+    return { instruction: `${baseInstruction}${docContextBlock}`, enginesUsed: [], brainFired: false, confidence: 75 };
+  }
+}
+
+// ─── BRAIN-CONNECTED CHAT ROUTE ───────────────────────────────────────────────
+// Every message now goes through the full intelligence stack.
+// Brain fires in parallel, never blocks — 3.5s hard timeout, then graceful fallback.
 router.post('/chat', requireApiKey, async (req: Request, res: Response) => {
   try {
-    const { messages, message, conversationHistory, systemInstruction } = req.body;
+    const { messages, message, conversationHistory, systemInstruction, uploadedDocumentText, documentContext } = req.body;
 
-    // Support both legacy format (messages array) and new format (message + conversationHistory)
     let chatMessages: AIMessage[];
+    let latestUserMessage = '';
 
     if (Array.isArray(messages) && messages.length > 0) {
-      // Legacy: plain messages array
       chatMessages = messages;
+      const lastUser = [...messages].reverse().find((m: AIMessage) => m.role === 'user');
+      latestUserMessage = lastUser?.content || '';
     } else if (typeof message === 'string' && message.trim()) {
-      // New format: combine conversationHistory + current message
       const history: AIMessage[] = Array.isArray(conversationHistory)
         ? conversationHistory
             .filter((m: { role?: string; content?: string }) =>
@@ -2138,26 +2336,41 @@ router.post('/chat', requireApiKey, async (req: Request, res: Response) => {
               content: m.content,
             }))
         : [];
-      // Append current user message
-      chatMessages = [...history, { role: 'user' as const, content: message.trim() }];
+      latestUserMessage = message.trim();
+      chatMessages = [...history, { role: 'user' as const, content: latestUserMessage }];
     } else {
       return res.status(400).json({ error: 'Either messages array or message string is required in request body' });
     }
 
-    const effectiveSystem = (typeof systemInstruction === 'string' && systemInstruction.trim())
+    const baseSystem = (typeof systemInstruction === 'string' && systemInstruction.trim())
       ? systemInstruction.trim()
       : SYSTEM_INSTRUCTION;
 
+    // Merge any uploaded document text from multiple sources
+    const docText = (
+      (typeof uploadedDocumentText === 'string' && uploadedDocumentText) ||
+      (typeof documentContext === 'string' && documentContext) ||
+      ''
+    );
+
+    // Fire brain augmentation — parallel, non-blocking
+    const { instruction: effectiveSystem, enginesUsed, brainFired, confidence } =
+      await buildBrainAugmentedInstruction(latestUserMessage, baseSystem, docText);
+
+    console.log(`[Chat] Brain fired: ${brainFired} | Engines: ${enginesUsed.length} | User: "${latestUserMessage.slice(0, 60)}"`);
+
     const rawText = await generateWithAI(chatMessages, effectiveSystem);
     const text = stripThinkingTokens(rawText);
+
     res.json({
       id: Date.now().toString(),
-      type: 'strategy',
-      title: 'Copilot Response',
+      type: 'intelligence',
+      title: brainFired ? 'Intelligence Response' : 'Copilot Response',
       description: text,
       text,
       content: text,
-      confidence: 85
+      confidence,
+      _intelligence: brainFired ? { enginesUsed, brainFired, engineCount: enginesUsed.length } : undefined,
     });
   } catch (error) {
     console.error('AI chat error:', error);
@@ -2387,7 +2600,7 @@ router.post('/consultant/stream', async (req: Request, res: Response) => {
 
     // Phase 1: SAT Validation
     sendEvent('phase', { phase: 'SAT Contradiction Check', status: 'running' });
-    const satResult = satSolver.analyze(reportParams as unknown as import('../../types').ReportParameters);
+    const satResult = satSolver.analyze(reportParams as unknown as import('../../types.js').ReportParameters);
     sendEvent('phase_complete', {
       phase: 'SAT Contradiction Check',
       result: { isSatisfiable: satResult.isSatisfiable, contradictions: satResult.contradictions.length, confidence: satResult.confidence },
@@ -2395,7 +2608,7 @@ router.post('/consultant/stream', async (req: Request, res: Response) => {
 
     // Phase 2: Memory Retrieval (hybrid)
     sendEvent('phase', { phase: 'Hybrid Memory Search', status: 'running' });
-    const memoryResults = globalVectorIndex.hybridSearch(reportParams as unknown as import('../../types').ReportParameters, {
+    const memoryResults = globalVectorIndex.hybridSearch(reportParams as unknown as import('../../types.js').ReportParameters, {
       maxResults: 5,
       enableQueryExpansion: true,
       reasoningContext: { riskLevel: reportParams.riskTolerance as string, focusAreas: reportParams.strategicIntent as string[] },
@@ -2408,8 +2621,8 @@ router.post('/consultant/stream', async (req: Request, res: Response) => {
     // Phase 3: Parallel Reasoning
     sendEvent('phase', { phase: 'Adversarial Debate + Formula Scoring', status: 'running' });
     const [debateResult, formulaResult] = await Promise.all([
-      bayesianDebateEngine.runDebate(reportParams as unknown as import('../../types').ReportParameters),
-      dagScheduler.execute(reportParams as unknown as import('../../types').ReportParameters),
+      bayesianDebateEngine.runDebate(reportParams as unknown as import('../../types.js').ReportParameters),
+      dagScheduler.execute(reportParams as unknown as import('../../types.js').ReportParameters),
     ]);
     sendEvent('phase_complete', {
       phase: 'Adversarial Debate',

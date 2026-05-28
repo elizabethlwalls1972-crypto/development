@@ -70,6 +70,7 @@ import { sanitizeBody, promptInjectionGuard } from './middleware/validate.js';
 import proxyRoutes from './routes/proxy.js';
 import memoryRoutes from './routes/memory.js';
 import ollamaRoutes from './routes/ollama.js';
+import agentsRoutes from './routes/agents.js';
 
 const app = express();
 const PORT = parseInt(String(process.env.PORT || 3000), 10);
@@ -310,10 +311,105 @@ app.use('/api/search', searchRoutes);
 app.use('/api/autonomous', autonomousRoutes);
 app.use('/api/governance', governanceRoutes);
 app.use('/api/learning', learningRoutes);
-// bedrock placeholder route removed — all AI inference goes through /api/ai
 app.use('/api/ai/proxy', proxyRoutes);
 app.use('/api/memory', memoryRoutes);
 app.use('/api/ollama', ollamaRoutes);
+app.use('/api/agents', agentsRoutes);
+import feedbackRoutes from './routes/feedback.js';
+app.use('/api/feedback', feedbackRoutes);
+
+// ── Previously orphaned routes — now connected ────────────────────────────────
+// agentic.ts is a proper Express router — mount it directly
+import agenticRoutes from './routes/agentic.js';
+app.use('/api/agentic', agenticRoutes);
+
+// ── Utility modules (consultantCapabilities, overlookedFirstEngine, etc.) ─────
+// These are intelligence utility modules with named exports, not Express routers.
+// They are already imported and used by server/routes/ai.ts internally.
+// Re-exporting their intelligence via the /api/consultant/capabilities endpoint:
+import { Router as _CapRouter } from 'express';
+import {
+  detectConsultantCapabilityMode,
+  extractConsultantCaseSignals,
+  deriveConsultantCapabilityProfile,
+} from './routes/consultantCapabilities.js';
+import { buildOverlookedIntelligenceSnapshot } from './routes/overlookedFirstEngine.js';
+import { runStrategicIntelligencePipeline } from './routes/strategicIntelligencePipeline.js';
+
+const capRouter = _CapRouter();
+capRouter.post('/mode', (req, res) => {
+  try {
+    const mode = detectConsultantCapabilityMode(req.body?.message || '');
+    const signals = extractConsultantCaseSignals(req.body?.message || '', req.body?.context);
+    const profile = deriveConsultantCapabilityProfile(req.body?.message || '', req.body?.context);
+    res.json({ mode, signals, profile });
+  } catch (e) { res.status(500).json({ error: 'Capability detection failed' }); }
+});
+capRouter.post('/overlooked', (req, res) => {
+  try {
+    const snapshot = buildOverlookedIntelligenceSnapshot(req.body?.message || '', req.body?.context);
+    res.json(snapshot);
+  } catch (e) { res.status(500).json({ error: 'Overlooked intelligence failed' }); }
+});
+capRouter.post('/pipeline', (req, res) => {
+  try {
+    const output = runStrategicIntelligencePipeline(req.body?.message || '', req.body?.context);
+    res.json(output);
+  } catch (e) { res.status(500).json({ error: 'Strategic pipeline failed' }); }
+});
+app.use('/api/consultant', capRouter);
+
+
+// ── Document Upload Route — PDF/Word/Text → extracted text → Susan ────────────
+// This is the missing link: uploaded documents now get parsed and their text
+// is returned to the frontend which passes it as `uploadedDocumentText` in chat.
+import multer from 'multer';
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+
+app.post('/api/documents/upload', upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const { originalname, mimetype, buffer } = req.file;
+    let text = '';
+
+    if (mimetype === 'text/plain' || originalname.endsWith('.txt') || originalname.endsWith('.md')) {
+      text = buffer.toString('utf-8');
+    } else if (mimetype === 'application/pdf' || originalname.endsWith('.pdf')) {
+      try {
+        const { createRequire } = await import('module');
+        const require = createRequire(import.meta.url);
+        const pdfParse = require('pdf-parse');
+        const data = await pdfParse(buffer);
+        text = data.text;
+      } catch {
+        text = buffer.toString('latin1').replace(/[^\x20-\x7E\n\r\t]/g, ' ');
+      }
+    } else if (originalname.endsWith('.csv')) {
+      text = buffer.toString('utf-8');
+    } else {
+      // For Word docs and others — extract readable text
+      text = buffer.toString('utf-8').replace(/[^\x20-\x7E\n\r\t]/g, ' ');
+    }
+
+    const preview = text.slice(0, 500);
+    const wordCount = text.split(/\s+/).filter(Boolean).length;
+
+    console.log(`[DocumentUpload] Parsed: ${originalname} | ${wordCount} words | type: ${mimetype}`);
+
+    res.json({
+      success: true,
+      filename: originalname,
+      wordCount,
+      preview,
+      text: text.slice(0, 50000), // cap at 50k chars for context injection
+      characterCount: text.length,
+    });
+  } catch (error) {
+    console.error('[DocumentUpload] Error:', error);
+    res.status(500).json({ error: 'Failed to parse document', details: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 
 // Serve static frontend in production
 if (process.env.NODE_ENV === 'production') {

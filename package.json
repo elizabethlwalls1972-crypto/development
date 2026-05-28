@@ -19,7 +19,7 @@
     "build:all": "npm run build:client && npm run build:server",
     "build:amplify": "node scripts/build-amplify.js",
     "start": "node dist-server/server/index.js",
-    "preview": "npm run build:client && wrangler dev",
+    "preview": "npm run build:client && vite preview",
     "test:nsil": "tsx scripts/nsilSimulation.ts",
     "test:interaction-stress": "tsx scripts/interactionStress100.ts",
     "live:global-matters": "tsx scripts/liveGlobalMatterRun.ts",
@@ -32,13 +32,14 @@
     "audit:unused:deps": "depcheck",
     "audit:cycles": "madge --extensions ts,tsx --circular ./",
     "audit:all": "npm run audit:unused:exports && npm run audit:unused:deps && npm run audit:cycles",
-    "deploy": "npm run build:client && wrangler deploy"
+    "deploy": "npm run build:all"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.1013.0",
     "@google/genai": "^1.30.0",
     "@google/generative-ai": "^0.24.1",
     "@types/express-rate-limit": "^5.1.3",
+    "@types/multer": "^2.1.0",
     "axios": "^1.13.2",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -54,6 +55,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.555.0",
     "mathjs": "^12.4.0",
+    "multer": "^2.1.1",
     "pdfjs-dist": "^5.5.207",
     "pg": "^8.20.0",
     "react": "^19.2.0",
@@ -66,7 +68,6 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.36.4",
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.58.2",
     "@types/compression": "^1.7.5",
@@ -94,7 +95,6 @@
     "ts-prune": "^0.10.3",
     "tsx": "^4.19.1",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0",
-    "wrangler": "^4.90.1"
+    "vite": "^6.2.0"
   }
 }

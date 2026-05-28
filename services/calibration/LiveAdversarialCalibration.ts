@@ -32,7 +32,7 @@ export interface PersonaCalibrationState {
   personaName: string;
   baseWeight: number;
   currentWeight: number;
-  accuracyByS ector: Record<string, number>; // sector -> accuracy %
+  accuracyBySector: Record<string, number>; // sector -> accuracy %
   accuracyByCountry: Record<string, number>; // country -> accuracy %
   overallAccuracy: number;
   predictionsCount: number;

@@ -7,7 +7,7 @@
  * Spreads token usage, picks the best provider for each task type,
  * implements retry-with-fallback, and tracks usage to avoid rate limits.
  *
- * Providers: Ollama models (local, 3 models) → Gemma → Groq → Together → OpenRouter → Mistral → OpenAI → Anthropic
+ * Providers: Ollama models (local, 3 models) → LM Studio/Jan/llamafile → Gemma → Groq → Together → OpenRouter → Mistral → OpenAI → Anthropic
  * Each provider has different strengths:
  *   - ollama (llama3.2:3b):   Fast local inference, zero cost, full privacy
  *   - ollama-qwen3 (qwen3):   Local deep reasoning + long analysis (Alibaba Qwen3)
@@ -25,7 +25,7 @@
 import { callOllama, checkOllamaAvailable, type OllamaMessage } from './ollamaService';
 import { callGemma, isGemmaAvailable, type GemmaMessage } from '../gemmaService';
 
-export type AIProvider = 'ollama' | 'ollama-qwen3' | 'ollama-openchat' | 'gemma' | 'groq' | 'together' | 'openrouter' | 'mistral' | 'openai' | 'anthropic';
+export type AIProvider = 'ollama' | 'ollama-qwen3' | 'ollama-openchat' | 'lm-studio' | 'jan' | 'llamafile' | 'gemma' | 'groq' | 'together' | 'openrouter' | 'mistral' | 'openai' | 'anthropic';
 
 export type TaskType =
   | 'quick-analysis'    // Short analytical response — Groq preferred
@@ -119,6 +119,35 @@ function getProviderConfigs(): ProviderConfig[] {
       costWeight: 0,
     });
   }
+
+  // LM Studio — local OpenAI-compatible server (free, no key, port 1234)
+  const lmStudioBase = process.env.LM_STUDIO_BASE_URL || 'http://localhost:1234';
+  // We register it always; callProvider will handle unavailability gracefully
+  configs.push({
+    name: 'lm-studio' as AIProvider,
+    apiUrl: `${lmStudioBase}/v1/chat/completions`,
+    getKey: () => 'local',
+    model: process.env.LM_STUDIO_MODEL || 'local-model',
+    maxOutputTokens: 8192,
+    requestsPerMinute: 999,
+    tokensPerMinute: 999999,
+    strengths: ['quick-analysis', 'general', 'research'],
+    costWeight: 0,
+  });
+
+  // Jan.ai — local OpenAI-compatible server (free, no key, port 1337)
+  const janBase = process.env.JAN_BASE_URL || 'http://localhost:1337';
+  configs.push({
+    name: 'jan' as AIProvider,
+    apiUrl: `${janBase}/v1/chat/completions`,
+    getKey: () => 'local',
+    model: process.env.JAN_MODEL || 'local-model',
+    maxOutputTokens: 8192,
+    requestsPerMinute: 999,
+    tokensPerMinute: 999999,
+    strengths: ['quick-analysis', 'general'],
+    costWeight: 0,
+  });
 
   // Gemma/Gemini — Google AI key with independent quota (second priority)
   if (isGemmaAvailable()) {
@@ -376,7 +405,44 @@ async function callProvider(config: ProviderConfig, options: AICallOptions): Pro
     };
   }
 
-  // ── Gemma/Gemini (Google AI key with independent quota) ──
+  // ── LM Studio / Jan.ai (local OpenAI-compatible, no API key) ──
+  if (config.name === 'lm-studio' || config.name === 'jan' || config.name === 'llamafile') {
+    // Fast reachability pre-check (800 ms max) — fail fast so orchestrator falls through
+    const tagsPath = config.name === 'lm-studio' ? '/v1/models'
+      : config.name === 'jan' ? '/v1/models' : '/v1/models';
+    const baseUrl = config.apiUrl.replace('/v1/chat/completions', '');
+    try {
+      const probe = await fetch(`${baseUrl}${tagsPath}`, { signal: AbortSignal.timeout(800) });
+      if (!probe.ok) throw new Error('not reachable');
+    } catch {
+      throw new Error(`${config.name} is not running locally (tried ${baseUrl})`);
+    }
+
+    const body: Record<string, unknown> = {
+      model: config.model,
+      messages: options.messages,
+      max_tokens: maxTokens,
+      temperature,
+    };
+
+    const res = await fetch(config.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(60_000),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`${config.name} ${res.status}: ${errText.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    const text = (data.choices?.[0]?.message?.content || '').trim();
+    const tokensUsed = data.usage?.total_tokens || 0;
+    return { text, provider: config.name as AIProvider, tokensUsed, latencyMs: Date.now() - start };
+  }
+
   if (config.name === 'gemma') {
     const gemmaMsgs: GemmaMessage[] = options.messages.map(m => ({
       role: m.role as 'system' | 'user' | 'assistant',
