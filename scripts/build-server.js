@@ -38,7 +38,7 @@ async function build() {
         'tls', 'tty', 'v8', 'vm', 'worker_threads', 'fs/promises',
         // Dependencies that should not be bundled (available in node_modules at runtime)
         'express', 'cors', 'helmet', 'compression', 'dotenv', 'pg',
-        'express-rate-limit',
+        'express-rate-limit', 'multer', 'pdf-parse',
         '@google/generative-ai', 'jsonwebtoken', 'axios',
         '@aws-sdk/client-bedrock-runtime', 'serverless-http',
         'uuid',
