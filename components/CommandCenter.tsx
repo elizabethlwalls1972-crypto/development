@@ -3116,7 +3116,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
                         {/* Header */}
                         <div className="px-8 md:px-14 pt-14 pb-12 border-b border-white/8 relative">
-                            <button onClick={() => setShowArchitecture(false)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-white/30 hover:text-white transition-colors"><X size={20} /></button>
+                            <button onClick={() => setShowArchitecture(false)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-white/60 hover:text-white transition-colors"><X size={20} /></button>
                             <div className="inline-block border border-amber-400/40 px-3 py-1 mb-6">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">Unprecedented — Never Been Combined</p>
                             </div>
@@ -3125,7 +3125,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <span className="font-black">One pipeline.</span><br />
                                 <span className="font-black text-amber-400">Built by one person.</span>
                             </h2>
-                            <p className="text-[15px] text-white/45 mt-6 max-w-3xl leading-relaxed">
+                            <p className="text-[15px] text-white/80 mt-6 max-w-3xl leading-relaxed">
                                 ADVERSIQ is not built on a single idea. It is the convergence of formal logic, Bayesian statistics, decision science, cognitive neuroscience, financial modelling, and software architecture - with autonomous calibration now running across the stack. Every layer has an explicit input and output contract. The platform now preserves the original NSIL architecture while adding live persona calibration, structural twin discovery, Rawlsian ethics certificates, investor trust signals, macro early-warning alerts, and a continual improvement harness.
                             </p>
                             {/* 6 Disciplines bar */}
@@ -3140,7 +3140,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 ].map((item, i) => (
                                     <div key={i} className="bg-slate-900 px-5 py-4">
                                         <p className="text-xs font-black text-amber-400 uppercase tracking-wide">{item.d}</p>
-                                        <p className="text-[11px] text-white/30 mt-1">{item.note}</p>
+                                        <p className="text-[11px] text-white/60 mt-1">{item.note}</p>
                                     </div>
                                 ))}
                             </div>
@@ -3157,7 +3157,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 ].map((s, i) => (
                                     <div key={i} className="bg-slate-900 px-6 py-7 text-center">
                                         <p className="text-3xl md:text-4xl font-black text-amber-400 leading-none">{s.n}</p>
-                                        <p className="text-[10px] text-white/30 uppercase tracking-[0.1em] mt-2 leading-snug whitespace-pre-line">{s.label}</p>
+                                        <p className="text-[10px] text-white/60 uppercase tracking-[0.1em] mt-2 leading-snug whitespace-pre-line">{s.label}</p>
                                     </div>
                                 ))}
                             </div>
@@ -3167,9 +3167,9 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <div className="flex items-center gap-4 mb-3">
                                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">What Has Never Been Combined Before</p>
                                     <div className="flex-1 h-px bg-white/5" />
-                                    <p className="text-[10px] text-white/20 uppercase tracking-widest">11 World-First Combinations</p>
+                                    <p className="text-[10px] text-white/50 uppercase tracking-widest">11 World-First Combinations</p>
                                 </div>
-                                <p className="text-sm text-white/30 leading-relaxed mb-8 max-w-3xl">
+                                <p className="text-sm text-white/75 leading-relaxed mb-8 max-w-3xl">
                                     Each of these exists in academic literature or commercial software in isolation. No platform has ever combined them into a single connected pipeline where the output of each gates the input of the next.
                                 </p>
 
@@ -3249,7 +3249,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                             </div>
                                             <p className={`text-[9px] font-bold uppercase tracking-[0.15em] mb-2 ${item.color} opacity-50`}>{item.tag}</p>
                                             <p className="text-[13px] font-black text-white uppercase tracking-wide mb-3 leading-snug">{item.title}</p>
-                                            <p className="text-[13px] text-white/40 leading-relaxed">{item.body}</p>
+                                            <p className="text-[13px] text-white/80 leading-relaxed">{item.body}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -3307,7 +3307,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                                 </div>
                                                 <p className={`text-[9px] font-bold uppercase tracking-[0.15em] mb-2 ${item.color} opacity-50`}>{item.tag}</p>
                                                 <p className="text-[13px] font-black text-white uppercase tracking-wide mb-3 leading-snug">{item.title}</p>
-                                                <p className="text-[13px] text-white/40 leading-relaxed">{item.body}</p>
+                                                <p className="text-[13px] text-white/80 leading-relaxed">{item.body}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -3317,8 +3317,8 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                 <div className="bg-gradient-to-br from-slate-900 to-slate-800 px-8 py-10 border-t-2 border-amber-400/20">
                                     <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-400 mb-6">Why This Has Never Been Done Before</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                                        <p className="text-[14px] text-white/60 leading-relaxed">Building any one of these components in isolation is achievable. Combining all of them — where the output of each feeds the input of the next, where the contradiction solver must run before the debate engine, where the audit layer must see the full chain before it signs off — required simultaneous expertise across six academic disciplines. No commercial product had demanded that combination until this one.</p>
-                                        <p className="text-[14px] text-white/60 leading-relaxed">The eleventh combination — real-time intelligence provenance with Hebbian feedback learning applied to engine orchestration — has no precedent. Every session improves the system. Every correction strengthens the right engines. Every investment case leaves the platform marginally smarter than it was before.</p>
+                                        <p className="text-[14px] text-white/85 leading-relaxed">Building any one of these components in isolation is achievable. Combining all of them — where the output of each feeds the input of the next, where the contradiction solver must run before the debate engine, where the audit layer must see the full chain before it signs off — required simultaneous expertise across six academic disciplines. No commercial product had demanded that combination until this one.</p>
+                                        <p className="text-[14px] text-white/85 leading-relaxed">The eleventh combination — real-time intelligence provenance with Hebbian feedback learning applied to engine orchestration — has no precedent. Every session improves the system. Every correction strengthens the right engines. Every investment case leaves the platform marginally smarter than it was before.</p>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-6">
                                         {['Formal Logic', 'Bayesian Statistics', 'Decision Science', 'Cognitive Neuroscience', 'Financial Modelling', 'Software Architecture'].map((d, i) => (
@@ -3327,7 +3327,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                             </div>
                                         ))}
                                     </div>
-                                    <p className="text-center text-xs text-white/20 uppercase tracking-[0.3em]">Six disciplines. Eleven world-first combinations. One pipeline. Built by one person.</p>
+                                    <p className="text-center text-xs text-white/60 uppercase tracking-[0.3em]">Six disciplines. Eleven world-first combinations. One pipeline. Built by one person.</p>
                                 </div>
                             </div>
 
@@ -3344,7 +3344,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     ].map((item, i) => (
                                         <div key={i} className="border-t border-white/10 pt-5">
                                             <p className="text-sm font-black text-white mb-2">{item.title}</p>
-                                            <p className="text-sm text-white/40 leading-relaxed">{item.body}</p>
+                                            <p className="text-sm text-white/80 leading-relaxed">{item.body}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -3356,7 +3356,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                     Six disciplines. 10 contract layers. 54+ formulas. Six advancement modules. One pipeline.<br />
                                     <span className="text-amber-400">Built by one person, in sixteen months, from nothing.</span>
                                 </p>
-                                <p className="text-sm text-white/40 mt-4 max-w-2xl leading-relaxed">
+                                <p className="text-sm text-white/80 mt-4 max-w-2xl leading-relaxed">
                                     The architecture is not a claim. The original NSIL stack remains the core: contradiction solving, debate, scoring, simulation, cognitive modelling, document synthesis, and reflexive release control. The new advancement layer adds outcome calibration, structural twins, ethics certificates, trust scoring, MEWS alerts, and continual improvement without reducing the platform to a reactive chatbot.
                                 </p>
                             </div>
@@ -3364,7 +3364,7 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
                         {/* Footer */}
                         <div className="px-8 md:px-14 py-6 border-t border-white/10 flex justify-between items-center">
-                            <p className="text-xs text-white/20 font-medium uppercase tracking-widest">ADVERSIQ Intelligence &mdash; ABN 55 978 113 300</p>
+                            <p className="text-xs text-white/60 font-medium uppercase tracking-widest">ADVERSIQ Intelligence &mdash; ABN 55 978 113 300</p>
                             <button onClick={() => setShowArchitecture(false)} className="px-8 py-3 bg-amber-400 text-slate-900 text-sm font-bold hover:bg-amber-300 transition-all">Close</button>
                         </div>
                     </div>
@@ -3378,14 +3378,14 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
 
                         {/* Header */}
                         <div className="relative px-8 md:px-16 pt-14 pb-12 border-b border-white/8">
-                            <button onClick={() => setShowFounderLetter(false)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-white/30 hover:text-white transition-colors"><X size={20} /></button>
+                            <button onClick={() => setShowFounderLetter(false)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-white/60 hover:text-white transition-colors"><X size={20} /></button>
                             <p className="text-xs font-bold uppercase tracking-[0.25em] mb-6 text-amber-400">A Letter from the Founder</p>
                             <h2 className="text-4xl md:text-6xl font-extralight text-white leading-[1.1] mb-4">
                                 Sixteen months.<br />
                                 <span className="font-black">One developer.</span><br />
                                 <span className="font-black text-amber-400">One purpose.</span>
                             </h2>
-                            <p className="text-sm text-white/40 mt-6 uppercase tracking-[0.15em]">Brayden Walls &mdash; Founder &amp; Sole Developer, ADVERSIQ Intelligence</p>
+                            <p className="text-sm text-white/80 mt-6 uppercase tracking-[0.15em]">Brayden Walls &mdash; Founder &amp; Sole Developer, ADVERSIQ Intelligence</p>
                         </div>
 
                         {/* Stats bar */}
@@ -3398,24 +3398,24 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             ].map((s, i) => (
                                 <div key={i} className="px-6 py-7 border-r border-white/8 last:border-r-0 text-center">
                                     <p className="text-3xl md:text-4xl font-black text-amber-400 leading-none">{s.n}</p>
-                                    <p className="text-[10px] text-white/35 uppercase tracking-[0.12em] mt-2 leading-snug whitespace-pre-line">{s.label}</p>
+                                    <p className="text-[10px] text-white/70 uppercase tracking-[0.12em] mt-2 leading-snug whitespace-pre-line">{s.label}</p>
                                 </div>
                             ))}
                         </div>
 
                         {/* Letter body */}
-                        <div className="px-8 md:px-16 py-12 space-y-10 text-white/65 leading-relaxed">
+                        <div className="px-8 md:px-16 py-12 space-y-10 text-white/85 leading-relaxed">
 
-                            <p className="text-xl md:text-2xl font-light text-white/90 leading-relaxed">
+                            <p className="text-xl md:text-2xl font-light text-white leading-relaxed">
                                 I am 53 years old. I am the sole developer of everything inside ADVERSIQ. And I want to tell you honestly why this exists &mdash; because it did not begin with a business plan.
                             </p>
 
                             {/* Pull quote */}
                             <div className="border-l-2 border-amber-400 pl-8 py-4 my-8">
-                                <p className="text-lg md:text-xl text-white/80 font-light italic leading-relaxed">
+                                <p className="text-lg md:text-xl text-white font-light italic leading-relaxed">
                                     &ldquo;Every &lsquo;new idea&rsquo; is old somewhere. The child learns what the parent already knows. The past isn&rsquo;t historical interest. The past is the solution library.&rdquo;
                                 </p>
-                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400/70 mt-4">&mdash; Brayden Walls</p>
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400 mt-4">&mdash; Brayden Walls</p>
                             </div>
 
                             {/* Sections */}
@@ -3435,11 +3435,11 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                                         'That period became the foundation of this system. Not as inspiration — as specification. Every feature in ADVERSIQ exists because I watched a real decision fail in a real place for a reason that was entirely preventable.',
                                     ]
                                 },
-                            ].map((section, si) => (
+                             ].map((section, si) => (
                                 <div key={si} className="border-t border-white/8 pt-10">
                                     <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-400 mb-6">{section.label}</p>
                                     {section.paras.map((p, pi) => (
-                                        <p key={pi} className="text-[15px] leading-relaxed text-white/60 mt-4 first:mt-0">{p}</p>
+                                        <p key={pi} className="text-[15px] leading-relaxed text-white/80 mt-4 first:mt-0">{p}</p>
                                     ))}
                                 </div>
                             ))}
@@ -3447,13 +3447,13 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             {/* Why I am telling you this */}
                             <div className="border-t border-white/8 pt-10">
                                 <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-400 mb-6">Why I Am Telling You This</p>
-                                <p className="text-[15px] text-white/60 leading-relaxed">
+                                <p className="text-[15px] text-white/80 leading-relaxed">
                                     Because I want you to understand what you&rsquo;re looking at. This is not a startup with a pitch deck and a runway. This is not a model wrapper with a dashboard and a marketing team. This is sixteen months of one person&rsquo;s full attention, applied to a problem that has existed for decades and been ignored because the people it hurt the most had no platform to be heard from.
                                 </p>
-                                <p className="text-[15px] text-white/60 leading-relaxed mt-4">
+                                <p className="text-[15px] text-white/80 leading-relaxed mt-4">
                                     I have no investors. I have no team. I registered as an Australian sole trader and built every line of this from the ground up. I did it because I believe the organisations that have always been overlooked deserve the same analytical firepower as the ones that were never at risk of being ignored.
                                 </p>
-                                <p className="text-[15px] text-white/80 font-medium leading-relaxed mt-6">
+                                <p className="text-[15px] text-white font-medium leading-relaxed mt-6">
                                     I hope it bridges the gap. That is all it was ever meant to do.
                                 </p>
                             </div>
@@ -3461,14 +3461,14 @@ const CommandCenter: React.FC<CommandCenterProps> = ({ onEnterPlatform, onOpenGl
                             {/* Signature */}
                             <div className="border-t border-white/8 pt-10 mt-4">
                                 <p className="text-4xl md:text-5xl font-extralight text-white leading-tight mb-3">Brayden Walls</p>
-                                <p className="text-sm text-white/40 uppercase tracking-[0.15em]">Founder &amp; Sole Developer — ADVERSIQ Intelligence</p>
-                                <p className="text-xs text-white/25 mt-2 uppercase tracking-[0.1em]">ABN 55 978 113 300 — Registered Australian Sole Trader</p>
+                                <p className="text-sm text-white/80 uppercase tracking-[0.15em]">Founder &amp; Sole Developer — ADVERSIQ Intelligence</p>
+                                <p className="text-xs text-white/60 mt-2 uppercase tracking-[0.15em]">ABN 55 978 113 300 — Registered Australian Sole Trader</p>
                             </div>
                         </div>
 
                         {/* Footer */}
                         <div className="px-8 md:px-16 py-6 border-t border-white/8 flex justify-between items-center">
-                            <p className="text-xs text-white/20 font-medium uppercase tracking-widest">Built from the edge. For the whole world.</p>
+                            <p className="text-xs text-white/60 font-medium uppercase tracking-widest">Built from the edge. For the whole world.</p>
                             <button onClick={() => setShowFounderLetter(false)} className="px-8 py-3 bg-amber-400 text-slate-900 text-sm font-bold hover:bg-amber-300 transition-all">Close</button>
                         </div>
                     </div>
