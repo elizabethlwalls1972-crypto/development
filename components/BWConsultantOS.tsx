@@ -3926,7 +3926,7 @@ ${agentRegistry.current.toManifest()}`;
     onChunk: (text: string) => void
   ): Promise<string> => {
     try {
-      // ── Step 1: Try backend (Railway / Render / running Express server) ──────
+      // ── Step 1: Try backend (running Express server) ──────
       const systemPrompt = buildConsultantPrompt(userInput, context);
       const reqBody = JSON.stringify({
         message: userInput,

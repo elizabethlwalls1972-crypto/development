@@ -188,7 +188,7 @@ const FormulaDeepDiveModal: React.FC<FormulaDeepDiveModalProps> = ({ isOpen, onC
                             <li>Deterministic payload assembly; simulation harness for repeatability.</li>
                             <li>Roadmap: score calibration and narrative evaluation.</li>
                             <li>Health endpoint /api/health; suggested SLOs 99.5%+ uptime, P95 &lt; 300ms non-AI.</li>
-                            <li>Environments: npm run dev/dev:server/dev:all; build/start; Docker multi-stage; Railway + Netlify.</li>
+                            <li>Environments: npm run dev/dev:server/dev:all; build/start; local offline servers.</li>
                         </ul>
                     </section>
 

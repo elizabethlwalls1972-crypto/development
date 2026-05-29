@@ -17,7 +17,6 @@
     "build:secure": "npm run build && npm run security:scan-dist",
     "build:server": "node scripts/build-server.js",
     "build:all": "npm run build:client && npm run build:server",
-    "build:amplify": "node scripts/build-amplify.js",
     "start": "node dist-server/server/index.js",
     "preview": "npm run build:client && vite preview",
     "test:nsil": "tsx scripts/nsilSimulation.ts",
@@ -31,8 +30,7 @@
     "audit:unused:exports": "ts-prune -p tsconfig.json",
     "audit:unused:deps": "depcheck",
     "audit:cycles": "madge --extensions ts,tsx --circular ./",
-    "audit:all": "npm run audit:unused:exports && npm run audit:unused:deps && npm run audit:cycles",
-    "deploy": "npm run build:all"
+    "audit:all": "npm run audit:unused:exports && npm run audit:unused:deps && npm run audit:cycles"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.1013.0",

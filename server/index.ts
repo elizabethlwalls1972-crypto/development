@@ -25,7 +25,7 @@ const envPaths = [
   path.resolve(__dirname, '.env.local'),
 ];
 
-// Preserve critical env vars set by the shell/infra (Railway Dashboard) before dotenv runs
+// Preserve critical env vars set by the shell/infra before dotenv runs
 const shellNodeEnv = process.env.NODE_ENV;
 const shellPort = process.env.PORT;
 const preservedKeys: Record<string, string | undefined> = {};
@@ -57,7 +57,7 @@ for (const envPath of envPaths) {
   }
 }
 
-// Restore shell-set values — dotenv must never overwrite infra/CLI env vars (Railway)
+// Restore shell-set values — dotenv must never overwrite infra/CLI env vars
 for (const [key, val] of Object.entries(preservedKeys)) {
   if (val) {
     process.env[key] = val;
@@ -99,7 +99,7 @@ const app = express();
 const PORT = parseInt(String(process.env.PORT || 3000), 10);
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Trust Railway's reverse proxy so that X-Forwarded-For is used for client IP
+// Trust reverse proxy so that X-Forwarded-For is used for client IP
 // resolution. This must be set before any rate-limiting or IP-dependent
 // middleware to avoid express-rate-limit ValidationErrors on proxied requests.
 app.set('trust proxy', 1);
@@ -156,7 +156,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Health check (registered BEFORE rate-limiting and body parsing to ensure zero rate limit/CORS blocks on Railway)
+// Health check (registered BEFORE rate-limiting and body parsing to ensure zero rate limit/CORS blocks)
 app.get('/api/health', (req, res) => {
   const hasOllamaConfig = Boolean(String(process.env.OLLAMA_BASE_URL || process.env.OLLAMA_MODEL || '').trim());
   const hasOpenAI = Boolean(String(process.env.OPENAI_API_KEY || '').trim());
@@ -211,8 +211,7 @@ const aiLimiter = rateLimit({
 app.use('/api/ai/', aiLimiter);
 app.use('/api/search/location-intelligence', aiLimiter);
 
-// CORS - allow frontend origin (flexible for different deployment scenarios)
-// Set FRONTEND_URL in production to avoid wildcard openings
+// CORS - allow frontend origin (flexible for local deployment)
 const frontEndUrl = process.env.FRONTEND_URL || process.env.VITE_API_BASE_URL || '';
 const allowedOrigins = [
   frontEndUrl,
@@ -220,49 +219,14 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:3002',
   'http://localhost:3003',
+  'http://localhost:3004',
   'http://localhost:4000',
   'http://localhost:5173',
-  'https://bw-nexus-ai.onrender.com',
-  'https://braydenmw.github.io',
-  'https://*.cloudfront.net',
-  'https://*.amplifyapp.com',
-  'https://*.s3.amazonaws.com',
 ].filter(Boolean);
 
-// Also allow ngrok tunnels in production
-if (isProduction) {
-  allowedOrigins.push('https://*.ngrok-free.dev', 'https://*.ngrok.io');
-}
-
-// In production, also allow same-origin requests (AWS serves frontend + API from same host)
 const isAllowedOrigin = (origin: string | undefined): boolean => {
   if (!origin) return true; // same-origin or non-browser clients
-  if (allowedOrigins.some(allowed => allowed && (allowed.endsWith('*') ? origin.startsWith(allowed.slice(0, -1)) : origin === allowed))) return true;
-  
-  let hostname = '';
-  try {
-    hostname = new URL(origin).hostname;
-  } catch (e) {
-    hostname = origin || '';
-  }
-  // Enable known managed hosting domains
-  // In production, only allow origins explicitly listed in ALLOWED_ORIGINS env var
-  // In development, allow common managed hosting platforms
-  if (isProduction) {
-    const extraOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-    if (extraOrigins.some(allowed => origin === allowed || hostname === allowed)) return true;
-    // Allow Railway and common PaaS domains in production
-    if (/\.railway\.app$/i.test(hostname)) return true;
-    if (/\.onrender\.com$/i.test(hostname)) return true;
-    if (/\.ngrok-free\.dev$/i.test(hostname) || /\.ngrok\.io$/i.test(hostname)) return true;
-    return false;
-  }
-  // Dev-only: allow managed hosting platforms
-  if (/\.(amazonaws|amplifyapp|elasticbeanstalk|awsapprunner)\.com$/i.test(hostname)) return true;
-  if (/\.(railway|up\.railway)\.app$/i.test(hostname) || /\.railway\.app$/i.test(hostname)) return true;
-  if (/\.cloudfront\.net$/i.test(hostname)) return true;
-  if (/\.s3\.amazonaws\.com$/i.test(hostname)) return true;
-  return false;
+  return allowedOrigins.some(allowed => allowed && (allowed.endsWith('*') ? origin.startsWith(allowed.slice(0, -1)) : origin === allowed));
 };
 
 app.use(cors({
